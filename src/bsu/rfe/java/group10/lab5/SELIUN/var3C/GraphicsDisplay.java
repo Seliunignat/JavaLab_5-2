@@ -396,12 +396,23 @@ public class GraphicsDisplay extends JPanel {
             }
         }
         if (showMarkers) {
-            if (this.selectedMarker >= 0) {
-                point = this.translateXYtoPoint(((Double[]) this.graphicsData.get(this.selectedMarker))[0], ((Double[]) this.graphicsData.get(this.selectedMarker))[1]);
-                label = "X=" + formatter.format(((Double[]) this.graphicsData.get(this.selectedMarker))[0]) + ", Y=" + formatter.format(((Double[]) this.graphicsData.get(this.selectedMarker))[1]);
-                bounds = this.labelsFont.getStringBounds(label, context);
-                canvas.setColor(Color.DARK_GRAY);
-                canvas.drawString(label, (float) (point.getX() + 5.0D), (float) (point.getY() - bounds.getHeight()));
+            if (this.selectedMarker >= 0 || selectedMarker2 >= 0) {
+                if(this.selectedMarker >= 0)
+                {
+                    point = this.translateXYtoPoint(((Double[]) this.graphicsData.get(this.selectedMarker))[0], ((Double[]) this.graphicsData.get(this.selectedMarker))[1]);
+                    label = "X=" + formatter.format(((Double[]) this.graphicsData.get(this.selectedMarker))[0]) + ", Y=" + formatter.format(((Double[]) this.graphicsData.get(this.selectedMarker))[1]);
+                    bounds = this.labelsFont.getStringBounds(label, context);
+                    canvas.setColor(Color.DARK_GRAY);
+                    canvas.drawString(label, (float) (point.getX() + 5.0D), (float) (point.getY() - bounds.getHeight()));
+                }
+                if(selectedMarker2 >= 0)
+                {
+                    point = this.translateXYtoPoint(((Double[]) this.graphicsData2.get(this.selectedMarker2))[0], ((Double[]) this.graphicsData2.get(this.selectedMarker2))[1]);
+                    label = "X=" + formatter.format(((Double[]) this.graphicsData2.get(this.selectedMarker2))[0]) + ", Y=" + formatter.format(((Double[]) this.graphicsData2.get(this.selectedMarker2))[1]);
+                    bounds = this.labelsFont.getStringBounds(label, context);
+                    canvas.setColor(Color.DARK_GRAY);
+                    canvas.drawString(label, (float) (point.getX() + 5.0D), (float) (point.getY() - bounds.getHeight()));
+                }
             }
         }
 
