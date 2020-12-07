@@ -26,6 +26,7 @@ public class GraphicsDisplay extends JPanel {
     private ArrayList<Double[]> originalData2 = null;
 
     private int selectedMarker = -1;
+    private int selectedMarker2 = -1;
     private double minX;
     private double maxX;
     private double minY;
@@ -54,6 +55,7 @@ public class GraphicsDisplay extends JPanel {
     private boolean changeMode = false;
     private double[] originalPoint = new double[2];
     private java.awt.geom.Rectangle2D.Double selectionRect = new java.awt.geom.Rectangle2D.Double();
+
 
     public GraphicsDisplay() {
         this.setBackground(Color.WHITE);
@@ -240,9 +242,13 @@ public class GraphicsDisplay extends JPanel {
         canvas.setStroke(this.markerStroke);
         canvas.setColor(Color.RED);
         canvas.setPaint(Color.RED);
+
         java.awt.geom.Ellipse2D.Double lastMarker = null;
         Line2D.Double lastLineVertical = null;
         Line2D.Double lastLineHorizontal = null;
+        java.awt.geom.Ellipse2D.Double lastMarker2 = null;
+        Line2D.Double lastLineVertical2 = null;
+        Line2D.Double lastLineHorizontal2 = null;
         int i = -1;
         Iterator var5 = this.graphicsData.iterator();
 
@@ -287,7 +293,7 @@ public class GraphicsDisplay extends JPanel {
         }
         if(graphicsData2 != null) {
             Iterator var6 = this.graphicsData2.iterator();
-
+            i = -1;
             while (var6.hasNext()) {
                 Double[] point = (Double[]) var6.next();
                 ++i;
@@ -300,7 +306,7 @@ public class GraphicsDisplay extends JPanel {
                         canvas.setColor(Color.RED);
                     }
                     double radius;
-                    if (i == this.selectedMarker) {
+                    if (i == this.selectedMarker2) {
                         radius = 7;
                         //canvas.setColor(Color.GREEN);
                     } else {
@@ -315,10 +321,10 @@ public class GraphicsDisplay extends JPanel {
                     lineVertical.setLine(center.getX(), center.getY() - radius, center.getX(), center.getY() + radius);
                     lineHorizontal.setLine(center.getX() - radius, center.getY(), center.getX() + radius, center.getY());
                     marker.setFrameFromCenter(center, corner);
-                    if (i == this.selectedMarker) {
-                        lastMarker = marker;
-                        lastLineVertical = lineVertical;
-                        lastLineHorizontal = lineHorizontal;
+                    if (i == this.selectedMarker2) {
+                        lastMarker2 = marker;
+                        lastLineVertical2 = lineVertical;
+                        lastLineHorizontal2 = lineHorizontal;
                     } else {
                         canvas.draw(marker);
                         canvas.draw(lineHorizontal);
@@ -329,12 +335,19 @@ public class GraphicsDisplay extends JPanel {
             }
         }
 
-        if (lastMarker != null) {
+        if (lastMarker != null || lastMarker2 != null) {
             canvas.setColor(Color.GREEN);
             //canvas.setPaint(Color.GREEN);
-            canvas.draw(lastMarker);
-            canvas.draw(lastLineHorizontal);
-            canvas.draw(lastLineVertical);
+            if(lastMarker != null) {
+                canvas.draw(lastMarker);
+                canvas.draw(lastLineHorizontal);
+                canvas.draw(lastLineVertical);
+            }
+            if(lastMarker2 != null) {
+                canvas.draw(lastMarker2);
+                canvas.draw(lastLineHorizontal2);
+                canvas.draw(lastLineVertical2);
+            }
             //canvas.fill(lastMarker);
         }
 
@@ -451,7 +464,7 @@ public class GraphicsDisplay extends JPanel {
         return new double[]{this.viewport[0][0] + (double)x / this.scale, this.viewport[0][1] - (double)y / this.scale};
     }
 
-    protected int findSelectedPoint(int x, int y) {
+    protected int findSelectedPointInFirstGraphic(int x, int y) {
         if (this.graphicsData == null) {
             return -1;
         } else {
@@ -466,6 +479,24 @@ public class GraphicsDisplay extends JPanel {
                 }
             }
 
+            return -1;
+        }
+    }
+
+    protected int findSelectedPointInSecondGraphic(int x, int y) {
+        if (this.graphicsData2 == null) {
+            return -1;
+        } else {
+            int pos = 0;
+
+            for(Iterator var6 = this.graphicsData2.iterator(); var6.hasNext(); ++pos) {
+                Double[] point = (Double[]) var6.next();
+                java.awt.geom.Point2D.Double screenPoint = this.translateXYtoPoint(point[0], point[1]);
+                double distance = (screenPoint.getX() - (double)x) * (screenPoint.getX() - (double)x) + (screenPoint.getY() - (double)y) * (screenPoint.getY() - (double)y);
+                if (distance < 100.0D) {
+                    return pos;
+                }
+            }
             return -1;
         }
     }
@@ -502,7 +533,7 @@ public class GraphicsDisplay extends JPanel {
 
         public void mousePressed(MouseEvent ev) {
             if (ev.getButton() == 1) {
-                GraphicsDisplay.this.selectedMarker = GraphicsDisplay.this.findSelectedPoint(ev.getX(), ev.getY());
+                GraphicsDisplay.this.selectedMarker = GraphicsDisplay.this.findSelectedPointInFirstGraphic(ev.getX(), ev.getY());
                 GraphicsDisplay.this.originalPoint = GraphicsDisplay.this.translatePointToXY(ev.getX(), ev.getY());
                 if (GraphicsDisplay.this.selectedMarker >= 0) {
                     GraphicsDisplay.this.changeMode = true;
@@ -539,14 +570,15 @@ public class GraphicsDisplay extends JPanel {
         }
 
         public void mouseMoved(MouseEvent ev) {
-            GraphicsDisplay.this.selectedMarker = GraphicsDisplay.this.findSelectedPoint(ev.getX(), ev.getY());
-            if (GraphicsDisplay.this.selectedMarker >= 0) {
-                GraphicsDisplay.this.setCursor(Cursor.getPredefinedCursor(8));
+            selectedMarker = findSelectedPointInFirstGraphic(ev.getX(), ev.getY());
+            selectedMarker2 = findSelectedPointInSecondGraphic(ev.getX(), ev.getY());
+            if (selectedMarker >= 0 || selectedMarker2 >= 0) {
+                setCursor(Cursor.getPredefinedCursor(8));
             } else {
-                GraphicsDisplay.this.setCursor(Cursor.getPredefinedCursor(0));
+                setCursor(Cursor.getPredefinedCursor(0));
             }
 
-            GraphicsDisplay.this.repaint();
+            repaint();
         }
 
         public void mouseDragged(MouseEvent ev) {
